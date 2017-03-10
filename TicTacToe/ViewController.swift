@@ -13,6 +13,7 @@ class ViewController: UIViewController {
 	private var games: [Game]
 	private var difficulty: String?
 	private var ui: UI?
+	private var players: [String]
 
 	
 	@IBOutlet var cells: [UIButton]!
@@ -36,8 +37,9 @@ class ViewController: UIViewController {
 	}
 	
 	required init?(coder aDecoder: NSCoder) {
-		player = "X"
-		difficulty = "blind"
+		players = ["X", "O"]
+		player = players[0]
+		difficulty = "master"
 		games = [Game]()
 		super.init(coder: aDecoder)
 	}
@@ -59,6 +61,8 @@ class ViewController: UIViewController {
 		if (difficulty != nil) {
 			let game = Game()
 			games += [game]
+			let firstTurn = players[1 - (games.count % 2)]
+			game.setFirstTurn(_firstTurn: firstTurn)
 			if (ui == nil) {
 				ui = UI(_board: cells)
 			} else {
@@ -74,7 +78,7 @@ class ViewController: UIViewController {
 	/*
 	* Cell click behavior and control
 	* if an empty cell is clicked when the game is running and its the human player's turn
-	* get the index (tag) of the clicked cell, craete the next game state, update the UI, and
+	* get the index (tag) of the clicked cell, create the next game state, update the UI, and
 	* advance the game to the new created state
 	*/
 	private func play(sender: UIButton) {

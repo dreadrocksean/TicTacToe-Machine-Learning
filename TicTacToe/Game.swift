@@ -13,9 +13,10 @@ import Foundation
 */
 class Game {
 	
-	//public : ai player for this game
-	var ai: AI?
+	//private : ai player for this game
+	private var ai: AI?
 	
+	// public: game status [beginning, running, ended]
 	var status: String
 	
 	// public : game current state
@@ -28,8 +29,10 @@ class Game {
 		currentState.board = ["E", "E", "E",
 		                      "E", "E", "E",
 		                      "E", "E", "E"]
-		
-		currentState.turn = "X"; //X plays first
+	}
+	
+	func setFirstTurn(_firstTurn: String) {
+		currentState.turn = _firstTurn
 	}
 	
 	/*
@@ -46,27 +49,9 @@ class Game {
 	func advanceTo(_state: State) {
 		currentState = _state;
 		if(_state.isTerminal()) {
-			status = "ended";
-			if (_state.result == "X-won") {
-//				ui.switchViewTo("won")
-			}
-			else if(_state.result == "O-won") {
-//				ui.switchViewTo("lost")
-			}
-			else {
-//				ui.switchViewTo("draw")
-			}
-		}
-		else {
-			//the game is still running
-			
-			if(currentState.turn == "X") {
-//				ui.switchViewTo("human")
-			}
-			else {
-//				ui.switchViewTo("robot")
-				ai?.notify(turn: "O")
-			}
+			status = "ended";		}
+		else if(currentState.turn == "O") {
+			ai?.notify(turn: "O")
 		}
 	}
 	
@@ -75,7 +60,7 @@ class Game {
 	*/
 	func start() {
 		if(status == "beginning") {
-			//invoke advanceTo with the intial state
+			//invoke advanceTo with the initial state
 			advanceTo(_state: currentState)
 			status = "running"
 		}
