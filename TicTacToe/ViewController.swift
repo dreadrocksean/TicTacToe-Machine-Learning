@@ -115,7 +115,7 @@ class ViewController: UIViewController {
 		DispatchQueue.main.async {
 			sender.setTitle(self.player, for: .normal)
 		}
-		DispatchQueue.main.asyncAfter(deadline: Game.playDelay()) {
+		DispatchQueue.main.asyncAfter(deadline: UI.playDelay()) {
 			next.advanceTurn();
 			game.advanceTo(_state: next);
 		}

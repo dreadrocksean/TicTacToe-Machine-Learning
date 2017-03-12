@@ -80,7 +80,7 @@ class Game {
 	func end(state: State) {
 		status = "ended"
 		ui.showResults(state: state)
-		ui.resetBoard(delay: Game.playDelay(factor: 8))
+		ui.resetBoard(delay: 4.0)
 	}
 	
 	/*
@@ -96,11 +96,5 @@ class Game {
 			return -10 + _state.oMovesCount;
 		}
 		return 0
-	}
-	
-	static func playDelay(factor: Double = 1.0) -> DispatchTime {
-		var delay = Double(Int64(0.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-		delay = delay * factor
-		return DispatchTime.now() + delay
 	}
 }

@@ -28,6 +28,19 @@ class UI {
 		restart = _restart
 	}
 	
+	static func playDelay(_ factor: Double = 1.0) -> DispatchTime {
+		var delay = Double(Int64(Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+		delay = delay * factor
+		return DispatchTime.now() + delay
+	}
+	
+	func delayedFunc(_ delay: Double, _ closure: @escaping () -> Void) {
+		currentTask = DispatchWorkItem {
+			closure()
+		}
+		DispatchQueue.main.asyncAfter(deadline: UI.playDelay(delay), execute: currentTask!)
+	}
+	
 	func insertAt(i: Int?, turn: String?) {
 		if (i == nil) {return}
 		board![i!].setTitle(turn!, for: .normal)
@@ -37,11 +50,8 @@ class UI {
 		cell.setTitle("", for: .normal)
 	}
 	
-	func resetBoard(difficulty: String = "", delay: DispatchTime) {
-		currentTask = DispatchWorkItem {
-			self.resetBoard(difficulty: difficulty)
-		}
-		DispatchQueue.main.asyncAfter(deadline: delay, execute: currentTask!)
+	func resetBoard(difficulty: String = "", delay: Double) {
+		delayedFunc(delay) {self.resetBoard(difficulty: difficulty)}
 	}
 	
 	func resetBoard(difficulty: String = "") {
@@ -49,6 +59,8 @@ class UI {
 			clearCell(cell: cell)
 		}
 		setCellsFontColor()
+		setCellsAlpha()
+		stopAnimations()
 		switch difficulty {
 		case "master":
 			setBoardColor(color: RED); break;
@@ -81,9 +93,34 @@ class UI {
 		}
 	}
 	
+	func setCellsAlpha(alpha: Double = 1.0, cells: [Int] = []) {
+		for (i, cell) in board!.enumerated() {
+			if (cells.count == 0 || (cells.count != 0 && cells.contains(i))) {
+				cell.alpha = CGFloat(alpha)
+			}
+		}
+	}
+	
 	func showRestart(show: Bool, title: String = "Again?") {
 		restart!.setTitle(title, for: .normal)
 		restart!.isHidden = !show
+	}
+
+	func animateWin(state: State) {
+		delayedFunc(delay: 2.0) {
+			self.stopAnimations()
+			self.setCellsAlpha()
+		}
+		UIView.animate(withDuration: 0.1, delay: 0.0, options: [.curveEaseOut, .repeat, .autoreverse], animations: {
+				self.setCellsAlpha(alpha: 0.5, cells: state.winningCells!)
+				
+			}, completion: nil)
+	}
+	
+	func stopAnimations() {
+		for cell in board! {
+			cell.layer.removeAllAnimations()
+		}
 	}
 	
 	func showResults(state: State) {
@@ -93,9 +130,11 @@ class UI {
 		} else if(state.result == "O-won") {
 			setCellsColor(color: UIColor.red, cells: state.winningCells!)
 			setCellsFontColor(color: UIColor.white, cells: state.winningCells!)
+			animateWin(state: state)
 		} else {
 			setCellsColor(color: UIColor.green, cells: state.winningCells!)
 			setCellsFontColor(color: UIColor.white, cells: state.winningCells!)
+			animateWin(state: state)
 		}
 	}
 }
