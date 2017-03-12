@@ -38,6 +38,7 @@ class AIAction {
 			next.oMovesCount = next.oMovesCount + 1;
 		}
 		next.advanceTurn()
+		next.lastMove = movePosition
 		return next
 	}
 }

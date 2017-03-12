@@ -13,8 +13,10 @@ import Foundation
 */
 class Game {
 	
-	//private : ai player for this game
+	//private: ai player for this game
 	private var ai: AI?
+	//private: UI to update
+	private var ui: UI
 	
 	// public: game status [beginning, running, ended]
 	var status: String
@@ -22,7 +24,8 @@ class Game {
 	// public : game current state
 	var currentState: State
 	
-	init() {
+	init(_ui: UI) {
+		ui = _ui
 		status = "beginning"
 		currentState = State()
 		// "E" stands for empty board cell
@@ -48,8 +51,11 @@ class Game {
 	*/
 	func advanceTo(_state: State) {
 		currentState = _state;
+		//adds an X or an O to the board
+		ui.insertAt(i: _state.lastMove, turn: _state.lastTurn);
 		if(_state.isTerminal()) {
-			status = "ended";		}
+			end()
+		}
 		else if(currentState.turn == "O") {
 			ai?.notify(turn: "O")
 		}
@@ -60,9 +66,22 @@ class Game {
 	*/
 	func start() {
 		if(status == "beginning") {
-			//invoke advanceTo with the initial state
 			advanceTo(_state: currentState)
 			status = "running"
+		}
+	}
+	
+	func preStart(difficulty: String) {
+		self.ui.resetBoard(difficulty: difficulty)
+//		self.ui.showRestart(show: true, title: "Play")
+
+	}
+	
+	func end() {
+		status = "ended"
+		DispatchQueue.main.asyncAfter(deadline: Game.playDelay(factor: 2)) {
+			self.ui.resetBoard()
+//			self.ui.showRestart(show: true)
 		}
 	}
 	
@@ -79,5 +98,11 @@ class Game {
 			return -10 + _state.oMovesCount;
 		}
 		return 0
+	}
+	
+	static func playDelay(factor: Double = 1.0) -> DispatchTime {
+		var delay = Double(Int64(0.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+		delay = delay * factor
+		return DispatchTime.now() + delay
 	}
 }

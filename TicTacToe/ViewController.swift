@@ -15,8 +15,9 @@ class ViewController: UIViewController {
 	private var ui: UI?
 	private var players: [String]
 
-	
+
 	@IBOutlet var cells: [UIButton]!
+	@IBOutlet var levelButtons: [UIButton]!
 	@IBAction func cellsAction(_ sender: UIButton) {
 		play(sender: sender)
 	}
@@ -25,10 +26,25 @@ class ViewController: UIViewController {
 	}
 	@IBOutlet weak var restart: UIButton!
 
+	@IBAction func easy(_ sender: UIButton) {
+		selectLevel(_difficulty: "blind")
+	}
+	@IBAction func hard(_ sender: UIButton) {
+		selectLevel(_difficulty: "novice")
+	}
+	@IBAction func reallyHard(_ sender: UIButton) {
+		selectLevel(_difficulty: "master")
+	}
+
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		restart.layer.cornerRadius = 7
-		start()
+		for button in levelButtons {
+			self.scaleFont(button: button)
+		}
+		if (ui == nil) {
+			ui = UI(_board: cells, _restart: restart)
+		}
 	}
 
 	override func didReceiveMemoryWarning() {
@@ -39,9 +55,14 @@ class ViewController: UIViewController {
 	required init?(coder aDecoder: NSCoder) {
 		players = ["X", "O"]
 		player = players[0]
-		difficulty = "master"
 		games = [Game]()
 		super.init(coder: aDecoder)
+	}
+	
+	private func scaleFont(button: UIButton) {
+		button.titleLabel?.minimumScaleFactor = 0.1
+		button.titleLabel?.numberOfLines = 1
+		button.titleLabel?.adjustsFontSizeToFitWidth = true
 	}
 	
 	/*
@@ -50,6 +71,9 @@ class ViewController: UIViewController {
 	*/
 	private func selectLevel(_difficulty: String) {
 		difficulty = _difficulty
+		games += [Game(_ui: ui!)]
+		getCurrGame().preStart(difficulty: _difficulty)
+		start()
 	}
 	
 	/*
@@ -58,17 +82,13 @@ class ViewController: UIViewController {
 	* and UI view to switch to indicate that it's the human's turn to play
 	*/
 	private func start() {
-		if (difficulty != nil) {
-			let game = Game()
-			games += [game]
-			let firstTurn = players[1 - (games.count % 2)]
-			game.setFirstTurn(_firstTurn: firstTurn)
-			if (ui == nil) {
-				ui = UI(_board: cells)
-			} else {
-				ui!.resetBoard()
-			}
-			let ai = AI(_level: difficulty!, _game: game, _ui: ui!)
+		if (difficulty == nil) {return}
+		let game = getCurrGame()
+		let firstTurn = players[1 - (games.count % 2)]
+		game.setFirstTurn(_firstTurn: firstTurn)
+		ui!.showRestart(show: false)
+		DispatchQueue.main.async {
+			let ai = AI(_level: self.difficulty!, _game: game)
 			game.assignAI(_ai: ai)
 			ai.assignGameToAI(_game: game)
 			game.start()
@@ -95,15 +115,16 @@ class ViewController: UIViewController {
 		DispatchQueue.main.async {
 			sender.setTitle(self.player, for: .normal)
 		}
-		
-		let delayTime = DispatchTime.now() + Double(Int64(0.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-		DispatchQueue.main.asyncAfter(deadline: delayTime) {
+		DispatchQueue.main.asyncAfter(deadline: Game.playDelay()) {
 			next.advanceTurn();
 			game.advanceTo(_state: next);
 		}
 	}
 	
 	private func getCurrGame() -> Game {
+		if games.count == 0 {
+			games += [Game(_ui: ui!)]
+		}
 		return games[games.count - 1]
 	}
 }

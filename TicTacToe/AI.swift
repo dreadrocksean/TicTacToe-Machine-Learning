@@ -19,12 +19,14 @@ class AI {
 	
 	//private attribute: the game the player is playing
 	private var game: Game
-	private var ui: UI
 	
-	init(_level: String, _game: Game, _ui: UI) {
+	init(_level: String, _game: Game) {
 		level = _level
 		game = _game
-		ui = _ui
+	}
+	
+	private func getRandomInt(upper: Int) -> Int {
+		return Int(arc4random_uniform(UInt32(upper)))
 	}
 	
 	/*
@@ -83,7 +85,10 @@ class AI {
 	* @returns [AIAction]: the minimax value of the state
 	*/
 	private func getOptimizedMoves(turn: String) -> [AIAction] {
-		let available = game.currentState.emptyCells()
+		var available = game.currentState.emptyCells()
+		if (available.count == 9) {
+			available = [getRandomInt(upper: 9)]
+		}
 		
 		//enumerate and calculate the score for each available actions to the ai player
 		var availableActions = available.map({
@@ -96,7 +101,7 @@ class AI {
 		
 		//sort the enumerated actions list by score
 		if(turn == "X") {
-			//X maximizes --> decend sort the actions by minimax
+			//X maximizes --> descend sort the actions by minimax
 			availableActions.sort {
 				$0.minimaxVal > $1.minimaxVal
 			}
@@ -116,8 +121,6 @@ class AI {
 	* @param turn [String]: the turn, X or O
 	*/
 	private func makeMove(chosenAction: AIAction, turn: String) {
-		//adds an X or an O to the board
-		ui.insertAt(i: chosenAction.movePosition, turn: turn);
 		let next = chosenAction.applyTo(state: game.currentState);
 		game.advanceTo(_state: next);
 	}
@@ -128,8 +131,7 @@ class AI {
 	*/
 	private func makeABlindMove(turn: String) {
 		let available = game.currentState.emptyCells()
-		let randomInt = Int(arc4random_uniform(UInt32(available.count)))
-		let randomCell = available[randomInt]
+		let randomCell = available[getRandomInt(upper: available.count)]
 		let action = AIAction(pos: randomCell)
 		makeMove(chosenAction: action, turn: turn)
 	}

@@ -25,6 +25,12 @@ class State {
 	//public: the board configuration in this state
 	var board: [String]
 	
+	//public: the last move played
+	var lastMove: Int?
+	
+	//public: the last turn
+	var lastTurn: String?
+	
 	init() {
 		turn = ""
 		oMovesCount = 0
@@ -46,6 +52,7 @@ class State {
 	* public: advances the turn in a the state
 	*/
 	func advanceTurn() {
+		lastTurn = turn
 		turn = turn == "X" ? "O" : "X"
 	}
 	
