@@ -22,6 +22,9 @@ class State {
 	//public: the result of the game in this State
 	var result: String
 	
+	//public: the 3 winning cell indices
+	var winningCells: [Int]?
+	
 	//public: the board configuration in this state
 	var board: [String]
 	
@@ -91,6 +94,7 @@ class State {
 		for i in stride(from: 0, through: 6, by: 3) {
 			if(B[i] != "E" && B[i] == B[i + 1] && B[i + 1] == B[i + 2]) {
 				result = B[i] + "-won" //update the state result
+				winningCells = [i, i+1, i+2]
 				return true
 			}
 		}
@@ -99,6 +103,7 @@ class State {
 		for i in stride(from: 0, through: 2, by: 1) {
 			if(B[i] != "E" && B[i] == B[i + 3] && B[i + 3] == B[i + 6]) {
 				result = B[i] + "-won"
+				winningCells = [i, i+3, i+6]
 				return true
 			}
 		}
@@ -108,6 +113,7 @@ class State {
 		for i in 0...2 where i%2==0 {
 			if(B[i] != "E" && B[i] == B[i + j] && B[i + j] == B[i + 2*j]) {
 				result = B[i] + "-won"
+				winningCells = [i, i+j, i+2*j]
 				return true
 			}
 			j = j - 2

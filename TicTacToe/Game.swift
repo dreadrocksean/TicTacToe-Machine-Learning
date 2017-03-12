@@ -54,7 +54,7 @@ class Game {
 		//adds an X or an O to the board
 		ui.insertAt(i: _state.lastMove, turn: _state.lastTurn);
 		if(_state.isTerminal()) {
-			end()
+			end(state: _state)
 		}
 		else if(currentState.turn == "O") {
 			ai?.notify(turn: "O")
@@ -72,17 +72,15 @@ class Game {
 	}
 	
 	func preStart(difficulty: String) {
+		ui.currentTask?.cancel()
 		self.ui.resetBoard(difficulty: difficulty)
-//		self.ui.showRestart(show: true, title: "Play")
 
 	}
 	
-	func end() {
+	func end(state: State) {
 		status = "ended"
-		DispatchQueue.main.asyncAfter(deadline: Game.playDelay(factor: 2)) {
-			self.ui.resetBoard()
-//			self.ui.showRestart(show: true)
-		}
+		ui.showResults(state: state)
+		ui.resetBoard(delay: Game.playDelay(factor: 8))
 	}
 	
 	/*
